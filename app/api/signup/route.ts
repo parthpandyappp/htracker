@@ -1,8 +1,8 @@
 import bcrypt from "bcryptjs";
-const sign = require("jwt-encode");
 import { PrismaClient } from "@prisma/client";
 import { NextResponse } from "next/server";
 
+var jwt = require("jsonwebtoken");
 const prisma = new PrismaClient();
 
 export async function POST(req: Request) {
@@ -39,31 +39,17 @@ export async function POST(req: Request) {
       },
     });
 
-    console.log({ newUser });
-
     const userId = newUser.id;
-    const encodedToken = sign(
+    const encodedToken = jwt.sign(
       { userId, username, email },
       process.env.JWT_SECRET
     );
-
-    // Example: Pushing a default habit for the user
-    // const defaultHabit = await prisma.habit.create({
-    //   data: {
-    //     name: "Example Habit",
-    //     description: "This is an example habit",
-    //     startDate: new Date(),
-    //     endDate: new Date(),
-    //     userId: userId,
-    //   },
-    // });
 
     return NextResponse.json(
       { message: "User created successfully", user: newUser, encodedToken },
       { status: 201 }
     );
   } catch (error) {
-    console.error(error);
     return NextResponse.json(
       { error: "Failed to create user" },
       { status: 500 }
