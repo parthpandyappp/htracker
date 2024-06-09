@@ -27,7 +27,6 @@ export async function POST(req: Request) {
     }
 
     const passwordMatch = await bcrypt.compare(password, foundUser.password);
-    console.log(passwordMatch);
 
     if (passwordMatch) {
       const encodedToken = sign(
