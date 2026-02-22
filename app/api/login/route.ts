@@ -1,5 +1,6 @@
 import bcrypt from "bcryptjs";
-const sign = require("jwt-encode");
+var jwt = require("jsonwebtoken");
+
 import { PrismaClient } from "@prisma/client";
 import { NextResponse } from "next/server";
 
@@ -29,12 +30,15 @@ export async function POST(req: Request) {
     const passwordMatch = await bcrypt.compare(password, foundUser.password);
 
     if (passwordMatch) {
-      const encodedToken = sign(
+      const encodedToken = jwt.sign(
         { username: foundUser.username, email: foundUser.email },
         process.env.JWT_SECRET
       );
+
+      const { password, ...safeUser } = foundUser;
+
       return NextResponse.json(
-        { message: "Login successful", user: foundUser, encodedToken },
+        { message: "Login successful", user: safeUser, encodedToken },
         { status: 200 }
       );
     } else {
