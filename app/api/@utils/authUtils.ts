@@ -1,41 +1,19 @@
-import { PrismaClient } from "@prisma/client";
-import { NextResponse } from "next/server";
+import jwt from "jsonwebtoken";
 
-var jwt = require("jsonwebtoken");
-const prisma = new PrismaClient();
+export async function requiresAuth(req: Request): Promise<string | null> {
+  const authHeader = req.headers.get("authorization");
 
-export const requiresAuth = async (
-  req: any
-): Promise<NextResponse | string | undefined> => {
+  if (!authHeader) return null;
+
+  const token = authHeader.split(" ")[1];
+
   try {
-    const authorizationHeader = req.headers.get("authorization");
-    if (!authorizationHeader) {
-      return NextResponse.json(
-        { error: "Authorization header is missing" },
-        { status: 401 }
-      );
-    }
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
+      userId: string;
+    };
 
-    const encodedToken = authorizationHeader.split(" ")[1];
-    if (!encodedToken) {
-      return NextResponse.json({ error: "Token is missing" }, { status: 401 });
-    }
-
-    const decodedToken = jwt.verify(encodedToken, process.env.JWT_SECRET);
-    if (decodedToken) {
-      const user = await prisma.user.findUnique({
-        where: { username: decodedToken.username },
-      });
-      if (user) {
-        return user.id;
-      }
-    }
-
-    return NextResponse.json({ error: "Invalid token" }, { status: 401 });
-  } catch (error) {
-    return NextResponse.json(
-      { error: "Failed to authenticate" },
-      { status: 500 }
-    );
+    return decoded.userId;
+  } catch {
+    return null;
   }
-};
+}

@@ -1,10 +1,8 @@
 import bcrypt from "bcryptjs";
 var jwt = require("jsonwebtoken");
+import { prisma } from "../@lib/prisma";
 
-import { PrismaClient } from "@prisma/client";
 import { NextResponse } from "next/server";
-
-const prisma = new PrismaClient();
 
 export async function POST(req: Request) {
   try {
@@ -31,7 +29,7 @@ export async function POST(req: Request) {
 
     if (passwordMatch) {
       const encodedToken = jwt.sign(
-        { username: foundUser.username, email: foundUser.email },
+        { userId: foundUser.id },
         process.env.JWT_SECRET
       );
 

@@ -29,4 +29,18 @@ model Habit {
   endDate      DateTime?
   user         User      @relation(fields: [userId], references: [id])
   userId       String
+  logs        HabitLog[]
 }
+
+model HabitLog {
+  id       String   @id @default(uuid()) @map("_id")
+
+  habitId  String
+  habit    Habit    @relation(fields: [habitId], references: [id])
+
+  date     DateTime
+  value    Int      @default(1)
+
+  @@unique([habitId, date])
+}
+
