@@ -44,8 +44,10 @@ export async function POST(req: Request) {
       process.env.JWT_SECRET
     );
 
+    const { password: _password, ...safeUser } = newUser;
+
     return NextResponse.json(
-      { message: "User created successfully", user: newUser, encodedToken },
+      { message: "User created successfully", user: safeUser, encodedToken },
       { status: 201 }
     );
   } catch (error) {
