@@ -9,7 +9,6 @@ export async function POST(
 ) {
   try {
     const userId = await requiresAuth(req);
-    console.log({ userId });
     if (!userId)
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -17,9 +16,28 @@ export async function POST(
 
     const raw = body.date ? new Date(body.date) : new Date();
 
-    // ⭐ normalize to day
-    const date = new Date(raw);
-    date.setHours(0, 0, 0, 0);
+    // Normalize to a UTC-midnight instant so day boundaries are unambiguous
+    // regardless of the server's local timezone.
+    const date = new Date(
+      Date.UTC(raw.getUTCFullYear(), raw.getUTCMonth(), raw.getUTCDate())
+    );
+
+    const today = new Date();
+    const todayUtc = new Date(
+      Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate())
+    );
+    // Allow one extra UTC day of slack: a client in a timezone ahead of UTC
+    // (e.g. IST) can have a "today" that is already tomorrow in UTC terms.
+    // Without this, a genuine same-day check-in gets misclassified as future.
+    const maxAllowedDate = new Date(todayUtc);
+    maxAllowedDate.setUTCDate(maxAllowedDate.getUTCDate() + 1);
+
+    if (date > maxAllowedDate) {
+      return NextResponse.json(
+        { error: "You can't check in for a future date" },
+        { status: 400 }
+      );
+    }
 
     const habit = await prisma.habit.findFirst({
       where: { id: params.habitId, userId },
