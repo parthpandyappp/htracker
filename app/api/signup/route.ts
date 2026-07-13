@@ -41,7 +41,8 @@ export async function POST(req: Request) {
     const userId = newUser.id;
     const encodedToken = jwt.sign(
       { userId, username, email },
-      process.env.JWT_SECRET
+      process.env.JWT_SECRET,
+      { expiresIn: "30d" }
     );
 
     const { password: _password, ...safeUser } = newUser;

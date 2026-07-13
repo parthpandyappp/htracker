@@ -26,6 +26,12 @@ export async function apiFetch<T = any>(
   const data = await res.json().catch(() => ({}));
 
   if (!res.ok) {
+    // A 401 on a request we authenticated means the session is no longer
+    // valid (expired/invalid token). Signal it so the app can sign the user
+    // out instead of leaving them stuck in an error loop with stale state.
+    if (res.status === 401 && token && typeof window !== "undefined") {
+      window.dispatchEvent(new Event("auth:unauthorized"));
+    }
     throw new ApiError(data.error || "Something went wrong", res.status);
   }
 
