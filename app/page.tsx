@@ -124,6 +124,7 @@ export default function Home() {
                   checkedKeys={preview.checkedKeys}
                   todayKey={preview.todayKey}
                   onToggle={() => {}}
+                  interactive={false}
                 />
               </CardContent>
             </Card>

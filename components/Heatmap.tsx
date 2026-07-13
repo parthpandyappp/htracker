@@ -23,6 +23,7 @@ export function Heatmap({
   pendingKeys,
   todayKey,
   onToggle,
+  interactive = true,
 }: {
   weeks: DayCell[][];
   monthLabels: MonthLabel[];
@@ -30,6 +31,7 @@ export function Heatmap({
   pendingKeys?: Set<string>;
   todayKey: string;
   onToggle: (cell: DayCell) => void;
+  interactive?: boolean;
 }) {
   const gridWidth = weeks.length * COLUMN_WIDTH;
 
@@ -76,6 +78,22 @@ export function Heatmap({
                       <div
                         key={cell.key}
                         className="rounded-[3px] bg-foreground/[0.04] ring-1 ring-inset ring-foreground/[0.04]"
+                        style={{ width: CELL_SIZE, height: CELL_SIZE }}
+                      />
+                    );
+                  }
+
+                  // Non-interactive mode (e.g. the marketing preview): render
+                  // plain, non-focusable cells instead of a wall of buttons.
+                  if (!interactive) {
+                    return (
+                      <div
+                        key={cell.key}
+                        className={`rounded-[3px] ring-1 ring-inset ${
+                          isChecked
+                            ? "bg-green-500 ring-green-600/30"
+                            : "bg-foreground/[0.07] ring-foreground/[0.08]"
+                        }`}
                         style={{ width: CELL_SIZE, height: CELL_SIZE }}
                       />
                     );

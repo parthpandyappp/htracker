@@ -1,5 +1,6 @@
 import { prisma } from "../@lib/prisma";
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { requiresAuth } from "../@utils/authUtils";
 import { createHabitSchema } from "../@utils/validators";
 
@@ -16,7 +17,7 @@ export async function POST(req: Request) {
     const habit = await prisma.habit.create({
       data: {
         name,
-        description,
+        description: description ?? "",
         startDate: startDate ? new Date(startDate) : new Date(),
         endDate: null,
         userId,
@@ -27,7 +28,13 @@ export async function POST(req: Request) {
       { message: "Habit added", habit },
       { status: 201 }
     );
-  } catch {
+  } catch (err) {
+    if (err instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: err.issues[0]?.message ?? "Invalid input" },
+        { status: 400 }
+      );
+    }
     return NextResponse.json({ error: "Failed to add habit" }, { status: 500 });
   }
 }

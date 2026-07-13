@@ -30,7 +30,8 @@ export async function POST(req: Request) {
     if (passwordMatch) {
       const encodedToken = jwt.sign(
         { userId: foundUser.id },
-        process.env.JWT_SECRET
+        process.env.JWT_SECRET,
+        { expiresIn: "30d" }
       );
 
       const { password, ...safeUser } = foundUser;
